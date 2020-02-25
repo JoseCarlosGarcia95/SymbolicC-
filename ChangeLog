@@ -1,3 +1,7 @@
+2020-02-25
+	Add unit tests.
+	Fix bug with 3th degree equations.
+	
 2010-09-15
 	Fixed rational.h to include <limits>
 
