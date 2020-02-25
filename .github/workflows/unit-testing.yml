@@ -1,0 +1,15 @@
+name: Check that SymbolicC++ work as expected
+on: [push]
+
+jobs:
+  build:
+    name: Unit test SymbolicC++
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GTest
+        run: sudo apt update && sudo apt install libgtest-dev -y
+      - name: Compile GTest
+        run: sudo apt install cmake && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib
+      - uses: actions/checkout@master
+      - name: Run tests
+        run: ./run-tests.sh
