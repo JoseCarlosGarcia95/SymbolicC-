@@ -3,7 +3,7 @@
 TOTAL_MS=0
 for f in test/*; do
   echo "Running tests for $f"
-  g++ "$f" -l gtest -o ./run-test.out -lm -I headers/  -pthread || exit 1
+  g++ "$f" -l gtest -o ./run-test.out -lm -I headers/  -pthread -lgmpxx -lgmp || exit 1
   TEST_RESULT=$(./run-test.out || exit 1)
   echo "$TEST_RESULT"
   MS=$(echo "$TEST_RESULT" | grep "case ran." | awk '{print $9}')
