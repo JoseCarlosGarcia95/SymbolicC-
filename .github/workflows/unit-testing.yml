@@ -6,6 +6,8 @@ jobs:
     name: Unit test SymbolicC++
     runs-on: ubuntu-latest
     steps:
+      - name: Install Valgrind
+        run: sudo apt update && sudo apt install valgrind -y
       - name: Install GTest
         run: sudo apt update && sudo apt install libgtest-dev -y
       - name: Compile GTest
