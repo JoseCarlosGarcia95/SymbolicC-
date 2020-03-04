@@ -24,7 +24,7 @@
 #ifndef VERYLONG_H
 #define VERYLONG_H
 
-#include "identity.h"
+#include "misc/identity.hpp"
 #include <cassert>
 #include <cctype>
 #include <cmath>
@@ -286,6 +286,11 @@ int operator>=(const Verylong& u, const Verylong& v)
 Verylong abs(const Verylong& v)
 {
     return Verylong(abs(v.num));
+}
+
+Verylong gcd(const Verylong& u, const Verylong& v)
+{
+    return Verylong(gcd(u.num, v.num));
 }
 
 // Calculate the integer square root of a number
