@@ -27,6 +27,8 @@
 #include "misc/cloning.hpp"
 #include "misc/identity.hpp"
 
+#include "utils/number_theory/integer.hpp"
+
 // phased include headers
 // according to class hierarchy
 #include "symbolic/symbolic.h" // SymbolicInterface, Symbolic ...

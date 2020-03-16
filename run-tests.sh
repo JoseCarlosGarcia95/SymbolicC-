@@ -2,6 +2,11 @@
 
 TOTAL_MS=0
 for f in test/*; do
+  if [[ ! -z "$1" ]]; then
+    if [[ "$f" != *"$1"* ]]; then
+      continue
+    fi
+  fi
   echo "Running tests for $f"
   g++ "$f" -l gtest -o ./run-test.out -lm -I include/  -pthread -lgmpxx -lgmp || exit 1
   TEST_RESULT=$(./run-test.out || exit 1)

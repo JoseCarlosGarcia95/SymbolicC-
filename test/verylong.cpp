@@ -28,6 +28,18 @@ TEST(Verylong, BigSqrt)
     ASSERT_TRUE(sqrt(a) == sqrt(a));
 }
 
+TEST(Verylong, Factorize)
+{
+    Verylong composite("45105705414323153");
+    list<Verylong*> factors = factorize(composite);
+
+    ASSERT_TRUE(factors.size() == 2);
+
+    for (auto factor : factors) {
+        delete factor;
+    }
+}
+
 TEST(Verylong, Sqrt)
 {
     Verylong a("25");

@@ -90,6 +90,7 @@ public:
     friend Verylong sqrt(const Verylong&);
     friend Verylong pow(const Verylong&, const Verylong&);
     friend double div(const Verylong&, const Verylong&);
+    friend list<Verylong*> factorize(const Verylong&);
 
     // Class Data
     static const Verylong zero;
@@ -304,6 +305,22 @@ Verylong sqrt(const Verylong& v)
 Verylong pow(const Verylong& X, const Verylong& degree)
 {
     return Verylong(pow(X.num, degree.num));
+}
+
+// Calculate factors for given verylong
+list<Verylong*> factorize(const Verylong& u)
+{
+    list<Verylong*> result;
+    list<mpz_class> factors;
+
+    result = list<Verylong*> {};
+    factors = factorize_int(u.num);
+
+    for (auto factor : factors) {
+        result.push_back(new Verylong(factor));
+    }
+
+    return result;
 }
 
 // Double division function
