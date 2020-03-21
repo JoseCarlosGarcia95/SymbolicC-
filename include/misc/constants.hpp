@@ -26,13 +26,13 @@
 #ifndef SYMBOLIC_CPLUSPLUS_CONSTANTS_DECLARE
 #define SYMBOLIC_CPLUSPLUS_CONSTANTS_DECLARE
 
-namespace SymbolicConstant
-{
-static const Symbolic i = Symbolic(Power(Symbolic(-1),
-                                         Power(Symbolic(2), Symbolic(-1))));
+namespace SymbolicConstant {
+static const Symbolic i =
+    Symbolic(Power(Symbolic(-1), Power(Symbolic(2), Symbolic(-1))));
 static const Symbolic i_symbol("i");
 static const Symbolic e("e");
 static const Symbolic pi("pi");
+static const Symbolic undefined("undefined");
 } // namespace SymbolicConstant
 
 #endif
