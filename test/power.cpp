@@ -7,7 +7,7 @@ using namespace std;
 TEST(Simplify, SQRT) {
   Symbolic four(-4);
 
-  cout << sqrt(four).simplify();
+  ASSERT_TRUE(sqrt(four).simplify() == 2);
 }
 
 int main(int argc, char **argv) {

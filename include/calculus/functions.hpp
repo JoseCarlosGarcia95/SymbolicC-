@@ -23,6 +23,9 @@
 #ifndef SYMBOLIC_CPLUSPLUS_FUNCTIONS
 
 #include <cmath>
+
+#define TRIGONOMETRIC_SLACK 0.00001
+
 using namespace std;
 
 #ifdef SYMBOLIC_FORWARD
@@ -304,17 +307,68 @@ Sin::Sin(const Sin &s) : Symbol(s) {}
 Sin::Sin(const Symbolic &s) : Symbol(Symbol("sin")[s]) {}
 
 Simplified Sin::simplify() const {
-  const Symbolic &s = parameters.front().simplify();
+  Symbolic s = parameters.front().simplify();
+  Symbolic candidate = s / SymbolicConstant::pi;
+  Symbolic two(2), three(3), one(1);
+
   if (s == 0)
     return Number<int>(0);
-  if (s.type() == typeid(Product)) {
-    CastPtr<const Product> p(s);
-    if (p->factors.front() == -1)
-      return -Sin(-s);
+
+  if (candidate.type() == typeid(Numeric)) {
+    int sign = 1;
+    double first_quadrant_value = double(candidate);
+
+    first_quadrant_value -= floor(first_quadrant_value / 2);
+
+    if (first_quadrant_value >= 3.0 / 2) {
+      sign = -1;
+      first_quadrant_value = 2 - first_quadrant_value;
+    } else if (first_quadrant_value < 3.0 / 2 && first_quadrant_value >= 1) {
+      first_quadrant_value -= 1;
+      sign = -1;
+    } else if (first_quadrant_value < 1 && first_quadrant_value > 0.5) {
+      first_quadrant_value = 1 - first_quadrant_value;
+    }
+
+    if (abs(first_quadrant_value - 1) < TRIGONOMETRIC_SLACK) {
+      return Number<int>(0);
+    }
+
+    if (abs(first_quadrant_value - 1.0 / 6) < TRIGONOMETRIC_SLACK) {
+      return sign * 1 / two;
+    }
+    if (abs(first_quadrant_value - 1.0 / 4) < TRIGONOMETRIC_SLACK) {
+      return sign * sqrt(two) / two;
+    }
+    if (abs(first_quadrant_value - 1.0 / 3) < TRIGONOMETRIC_SLACK) {
+      return sign * sqrt(three) / two;
+    }
+    if (abs(first_quadrant_value - 1.0 / 2) < TRIGONOMETRIC_SLACK) {
+      return sign * Symbolic(1);
+    }
+    if (abs(first_quadrant_value - 1) < TRIGONOMETRIC_SLACK ||
+        abs(first_quadrant_value - 2) < TRIGONOMETRIC_SLACK) {
+      return Number<int>(0);
+    }
   }
-  if (s.type() == typeid(Numeric) &&
-      Number<void>(s).numerictype() == typeid(double))
-    return Number<double>(sin(CastPtr<const Number<double>>(s)->n));
+
+  if (s.type() == typeid(Product)) {
+
+    CastPtr<const Product> p(s);
+    if (p->factors.front().type() == typeid(Numeric)) {
+      double t = double(p->factors.front());
+      if (t < 0) {
+        return -Sin(-s).simplify();
+      }
+    }
+  }
+
+  if (s.type() == typeid(Numeric)) {
+    if (Number<void>(s).numerictype() == typeid(double)) {
+      return Number<double>(sin(CastPtr<const Number<double>>(s)->n));
+    }
+  }
+
   return *this;
 }
 
@@ -340,13 +394,52 @@ Cos::Cos(const Cos &s) : Symbol(s) {}
 Cos::Cos(const Symbolic &s) : Symbol(Symbol("cos")[s]) {}
 
 Simplified Cos::simplify() const {
-  const Symbolic &s = parameters.front().simplify();
+  Symbolic s = parameters.front().simplify();
+  Symbolic candidate = s / SymbolicConstant::pi;
+  Symbolic two(2), three(3), one(1);
+
   if (s == 0)
     return Number<int>(1);
+  if (candidate.type() == typeid(Numeric)) {
+    int sign = 1;
+    double first_quadrant_value = double(candidate);
+
+    first_quadrant_value -= floor(first_quadrant_value / 2);
+
+    if (first_quadrant_value >= 3.0 / 2) {
+      first_quadrant_value = 2 - first_quadrant_value;
+    } else if (first_quadrant_value < 3.0 / 2 && first_quadrant_value >= 1) {
+      first_quadrant_value -= 1;
+      sign = -1;
+    } else if (first_quadrant_value < 1 && first_quadrant_value > 0.5) {
+      first_quadrant_value = 1 - first_quadrant_value;
+      sign = -1;
+    }
+
+    if (abs(first_quadrant_value - 1.0 / 6) < TRIGONOMETRIC_SLACK) {
+      return sign * sqrt(three) / two;
+    }
+    if (abs(first_quadrant_value - 1.0 / 4) < TRIGONOMETRIC_SLACK) {
+      return sqrt(two) / two;
+    }
+    if (abs(first_quadrant_value - 1.0 / 3) < TRIGONOMETRIC_SLACK) {
+      return sign / two;
+    }
+    if (abs(first_quadrant_value - 1.0 / 2) < TRIGONOMETRIC_SLACK ||
+        abs(first_quadrant_value - 3.0 / 2) < TRIGONOMETRIC_SLACK) {
+      return Number<int>(0);
+    }
+    if (abs(first_quadrant_value - 1) < TRIGONOMETRIC_SLACK) {
+      return sign * Symbolic(-1);
+    }
+    if (abs(first_quadrant_value - 2) < TRIGONOMETRIC_SLACK) {
+      return sign * Symbolic(1);
+    }
+  }
   if (s.type() == typeid(Product)) {
     CastPtr<const Product> p(s);
     if (p->factors.front() == -1)
-      return Cos(-s);
+      return Cos(-s).simplify();
   }
   if (s.type() == typeid(Numeric) &&
       Number<void>(s).numerictype() == typeid(double))
