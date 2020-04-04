@@ -692,13 +692,59 @@ Symbolic::operator double(void) const {
     return double(num) / double(den);
   }
 
-  if (type() == typeid(Product) || type() == typeid(Sum)) {
-    Symbolic subs = *this->subst(SymbolicConstant::pi, M_PI);
-    subs = subs.subst(SymbolicConstant::e, M_E);
+  if (type() == typeid(Sum)) {
+    CastPtr<const Sum> psum = *this;
 
-    if (subs != *this) {
-      return double(subs);
+    double total = 0;
+
+    for (auto dsum : psum->summands) {
+      total += double(dsum);
     }
+
+    return total;
+  }
+
+  if (type() == typeid(Product)) {
+    CastPtr<const Product> psum = *this;
+
+    double total = 1;
+
+    for (auto dsum : psum->factors) {
+      total *= double(dsum);
+    }
+
+    return total;
+  }
+
+  if (type() == typeid(Power)) {
+    return (CastPtr<Power>(*this))->evalf();
+  }
+
+  if (type() == typeid(Log)) {
+    return (CastPtr<Log>(*this))->evalf();
+  }
+
+  if (type() == typeid(Sin)) {
+    return (CastPtr<Sin>(*this))->evalf();
+  }
+
+  if (type() == typeid(Cos)) {
+    return (CastPtr<Cos>(*this))->evalf();
+  }
+
+  if (type() == typeid(Sinh)) {
+    return (CastPtr<Sinh>(*this))->evalf();
+  }
+
+  if (type() == typeid(Cosh)) {
+    return (CastPtr<Cosh>(*this))->evalf();
+  }
+
+  Symbolic subs = *this->subst(SymbolicConstant::pi, M_PI);
+  subs = subs.subst(SymbolicConstant::e, M_E);
+
+  if (subs != *this) {
+    return double(subs);
   }
 
   cerr << "Attempted to cast " << *this << " to double failed." << endl;

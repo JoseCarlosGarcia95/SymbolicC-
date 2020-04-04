@@ -40,8 +40,7 @@ class UniqueSymbol;
 #ifndef SYMBOLIC_CPLUSPLUS_SYMBOL_DECLARE
 #define SYMBOLIC_CPLUSPLUS_SYMBOL_DECLARE
 
-class Symbol : public CloningSymbolicInterface
-{
+class Symbol : public CloningSymbolicInterface {
 public:
   string name;
   list<Symbolic> parameters;
@@ -61,9 +60,9 @@ public:
   Expanded expand() const;
   int commute(const Symbolic &) const;
   PatternMatches match(const Symbolic &, const list<Symbolic> &) const;
-  PatternMatches match_parts(const Symbolic &,
-                             const list<Symbolic> &) const;
+  PatternMatches match_parts(const Symbolic &, const list<Symbolic> &) const;
 
+  double evalf() const;
   Symbol operator[](const Symbolic &) const;
   Symbol operator[](const list<Symbolic> &l) const;
   Symbol commutative(int = 0) const;
@@ -72,8 +71,7 @@ public:
   Cloning *clone() const { return Cloning::clone(*this); }
 };
 
-class UniqueSymbol : public Symbol
-{
+class UniqueSymbol : public Symbol {
 private:
   int *p;
 
@@ -104,8 +102,8 @@ public:
 //////////////////////////////////////
 
 Symbol::Symbol(const Symbol &s)
-    : CloningSymbolicInterface(s),
-      name(s.name), parameters(s.parameters), commutes(s.commutes) {}
+    : CloningSymbolicInterface(s), name(s.name), parameters(s.parameters),
+      commutes(s.commutes) {}
 
 Symbol::Symbol(const string &s, int c) : name(s), commutes(c) {}
 
@@ -113,16 +111,13 @@ Symbol::Symbol(const char *s, int c) : name(s), commutes(c) {}
 
 Symbol::~Symbol() {}
 
-void Symbol::print(ostream &o) const
-{
+void Symbol::print(ostream &o) const {
   list<Symbolic>::const_iterator i;
   o << name;
-  if (!parameters.empty())
-  {
+  if (!parameters.empty()) {
     o << ((type() == typeid(Symbol)) ? "[" : "(");
     parameters.front().print(o);
-    for (i = ++parameters.begin(); i != parameters.end(); ++i)
-    {
+    for (i = ++parameters.begin(); i != parameters.end(); ++i) {
       o << ",";
       i->print(o);
     }
@@ -130,10 +125,8 @@ void Symbol::print(ostream &o) const
   }
 }
 
-Symbolic Symbol::subst(const Symbolic &x, const Symbolic &y, int &n) const
-{
-  if (*this == x)
-  {
+Symbolic Symbol::subst(const Symbolic &x, const Symbolic &y, int &n) const {
+  if (*this == x) {
     ++n;
     return y;
   }
@@ -148,8 +141,7 @@ Symbolic Symbol::subst(const Symbolic &x, const Symbolic &y, int &n) const
   return *s;
 }
 
-Simplified Symbol::simplify() const
-{
+Simplified Symbol::simplify() const {
   list<Symbolic>::iterator i;
   // make a copy of *this
   CastPtr<Symbol> sym(*this);
@@ -160,8 +152,7 @@ Simplified Symbol::simplify() const
   return *sym;
 }
 
-int Symbol::compare(const Symbolic &s) const
-{
+int Symbol::compare(const Symbolic &s) const {
   list<Symbolic>::const_iterator i;
   list<Symbolic>::const_iterator j;
 
@@ -173,15 +164,13 @@ int Symbol::compare(const Symbolic &s) const
   if (sym->parameters.size() != parameters.size())
     return 0;
   for (i = parameters.begin(), j = sym->parameters.begin();
-       i != parameters.end();
-       ++i, ++j)
+       i != parameters.end(); ++i, ++j)
     if (*i != *j)
       return 0;
   return 1;
 }
 
-Symbolic Symbol::df(const Symbolic &s) const
-{
+Symbolic Symbol::df(const Symbolic &s) const {
   list<Symbolic>::const_iterator i;
 
   if (*this == s)
@@ -194,8 +183,7 @@ Symbolic Symbol::df(const Symbolic &s) const
   return result;
 }
 
-Symbolic Symbol::integrate(const Symbolic &s) const
-{
+Symbolic Symbol::integrate(const Symbolic &s) const {
   list<Symbolic>::const_iterator i;
 
   if (*this == s)
@@ -208,15 +196,19 @@ Symbolic Symbol::integrate(const Symbolic &s) const
   return *this * s;
 }
 
-Symbolic Symbol::coeff(const Symbolic &s) const
-{
+Symbolic Symbol::coeff(const Symbolic &s) const {
   if (*this == s)
     return 1;
   return 0;
 }
 
-Expanded Symbol::expand() const
-{
+double Symbol::evalf() const {
+  cerr << "evalf not defined for given function!" << endl;
+  throw SymbolicError(SymbolicError::NotDouble);
+  return 0;
+}
+
+Expanded Symbol::expand() const {
   // make a copy of *this
   CastPtr<Symbol> r(*this);
   list<Symbolic>::iterator i;
@@ -225,8 +217,7 @@ Expanded Symbol::expand() const
   return *r;
 }
 
-int Symbol::commute(const Symbolic &s) const
-{
+int Symbol::commute(const Symbolic &s) const {
   list<Symbolic>::const_iterator i;
 
   if (*this == s)
@@ -235,16 +226,13 @@ int Symbol::commute(const Symbolic &s) const
     if (!i->commute(s))
       return 0;
 
-  try
-  {
+  try {
     CastPtr<const Symbol> cp(s);
     for (i = cp->parameters.begin(); i != cp->parameters.end(); ++i)
       if (!commute(*i))
         return 0;
     return cp->commutes || commutes;
-  }
-  catch (bad_cast)
-  {
+  } catch (bad_cast) {
   }
 
   if (s.type() == typeid(SymbolicMatrix))
@@ -253,29 +241,25 @@ int Symbol::commute(const Symbolic &s) const
   return s.commute(*this);
 }
 
-PatternMatches
-Symbol::match(const Symbolic &s, const list<Symbolic> &p) const
-{
+PatternMatches Symbol::match(const Symbolic &s, const list<Symbolic> &p) const {
   PatternMatches l;
   list<Symbolic>::const_iterator i, j;
 
-  if ((type() == typeid(Symbol) || type() == typeid(UniqueSymbol)) && find(p.begin(), p.end(), *this) != p.end())
+  if ((type() == typeid(Symbol) || type() == typeid(UniqueSymbol)) &&
+      find(p.begin(), p.end(), *this) != p.end())
     pattern_match_OR(l, *this == s);
 
-  if (*this == s)
-  {
+  if (*this == s) {
     pattern_match_TRUE(l);
     return l;
   }
 
-  if (type() == s.type())
-  {
+  if (type() == s.type()) {
     CastPtr<Symbol> sym(s);
     if (name == sym->name && commutes == sym->commutes &&
         parameters.size() == sym->parameters.size())
       for (i = parameters.begin(), j = sym->parameters.begin();
-           i != parameters.end(); ++i, ++j)
-      {
+           i != parameters.end(); ++i, ++j) {
         PatternMatches ls = i->match(*j, p);
         if (i == parameters.begin())
           pattern_match_OR(l, ls);
@@ -286,14 +270,12 @@ Symbol::match(const Symbolic &s, const list<Symbolic> &p) const
   return l;
 }
 
-PatternMatches
-Symbol::match_parts(const Symbolic &s, const list<Symbolic> &p) const
-{
+PatternMatches Symbol::match_parts(const Symbolic &s,
+                                   const list<Symbolic> &p) const {
   PatternMatches l = s.match(*this, p);
   list<Symbolic>::const_iterator i;
 
-  for (i = parameters.begin(); i != parameters.end(); ++i)
-  {
+  for (i = parameters.begin(); i != parameters.end(); ++i) {
     PatternMatches ls = i->match_parts(s, p);
     pattern_match_OR(l, ls);
   }
@@ -302,8 +284,7 @@ Symbol::match_parts(const Symbolic &s, const list<Symbolic> &p) const
 
 // this should not be used with the functions cos, exp etc. since
 // the overrides on simplification and other methods will be lost
-Symbol Symbol::operator[](const Symbolic &s) const
-{
+Symbol Symbol::operator[](const Symbolic &s) const {
   if (type() != typeid(Symbol))
     cerr << "Warning: " << *this << " [" << s
          << "] discards any methods which have been overridden." << endl;
@@ -315,8 +296,7 @@ Symbol Symbol::operator[](const Symbolic &s) const
 // this should not be used with the functions cos, exp etc.
 // since the override on simplification and other methods
 // will be lost
-Symbol Symbol::operator[](const list<Symbolic> &l) const
-{
+Symbol Symbol::operator[](const list<Symbolic> &l) const {
   if (type() != typeid(Symbol))
     cerr << "Warning: " << *this << " [..."
          << "] discards any methods which have been overridden." << endl;
@@ -328,8 +308,7 @@ Symbol Symbol::operator[](const list<Symbolic> &l) const
 // this should not be used with the functions cos, exp etc.
 // since the override on simplification and other methods
 // will be lost
-Symbol Symbol::commutative(int c) const
-{
+Symbol Symbol::commutative(int c) const {
   if (type() != typeid(Symbol))
     cerr << "Warning: " << *this << " .commutative(" << c
          << ") discards any methods which have been overridden." << endl;
@@ -338,10 +317,7 @@ Symbol Symbol::commutative(int c) const
   return r;
 }
 
-Symbol Symbol::operator~() const
-{
-  return commutative(!commutes);
-}
+Symbol Symbol::operator~() const { return commutative(!commutes); }
 
 //////////////////////////////////////
 // Implementation of UniqueSymbol   //
@@ -349,26 +325,20 @@ Symbol Symbol::operator~() const
 
 UniqueSymbol::UniqueSymbol() : Symbol("") { p = new int(1); }
 
-UniqueSymbol::UniqueSymbol(const UniqueSymbol &u) : Symbol(u), p(u.p)
-{
+UniqueSymbol::UniqueSymbol(const UniqueSymbol &u) : Symbol(u), p(u.p) {
   ++(*p);
 }
 
 UniqueSymbol::UniqueSymbol(const Symbol &s) : Symbol(s) { p = new int(1); }
 
-UniqueSymbol::~UniqueSymbol()
-{
+UniqueSymbol::~UniqueSymbol() {
   if (--(*p) == 0)
     delete p;
 }
 
-void UniqueSymbol::print(ostream &o) const
-{
-  o << "c@" << p;
-}
+void UniqueSymbol::print(ostream &o) const { o << "c@" << p; }
 
-int UniqueSymbol::compare(const Symbolic &s) const
-{
+int UniqueSymbol::compare(const Symbolic &s) const {
   return (type() == s.type() && p == CastPtr<UniqueSymbol>(s)->p);
 }
 

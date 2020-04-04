@@ -69,6 +69,8 @@ public:
   Symbolic df(const Symbolic &) const;
   Symbolic integrate(const Symbolic &) const;
 
+  double evalf() const;
+
   Cloning *clone() const { return Cloning::clone(*this); }
 };
 
@@ -80,6 +82,8 @@ public:
   Simplified simplify() const;
   Symbolic df(const Symbolic &) const;
   Symbolic integrate(const Symbolic &) const;
+
+  double evalf() const;
 
   Cloning *clone() const { return Cloning::clone(*this); }
 };
@@ -93,6 +97,8 @@ public:
   Symbolic df(const Symbolic &) const;
   Symbolic integrate(const Symbolic &) const;
 
+  double evalf() const;
+
   Cloning *clone() const { return Cloning::clone(*this); }
 };
 
@@ -104,6 +110,8 @@ public:
   Simplified simplify() const;
   Symbolic df(const Symbolic &) const;
   Symbolic integrate(const Symbolic &) const;
+
+  double evalf() const;
 
   Cloning *clone() const { return Cloning::clone(*this); }
 };
@@ -117,6 +125,8 @@ public:
   Simplified simplify() const;
   Symbolic df(const Symbolic &) const;
   Symbolic integrate(const Symbolic &) const;
+
+  double evalf() const;
 
   Cloning *clone() const { return Cloning::clone(*this); }
 };
@@ -133,6 +143,7 @@ public:
   Symbolic df(const Symbolic &) const;
   Symbolic integrate(const Symbolic &) const;
   PatternMatches match_parts(const Symbolic &s, const list<Symbolic> &) const;
+  double evalf() const;
 
   Cloning *clone() const { return Cloning::clone(*this); }
 };
@@ -306,6 +317,11 @@ Sin::Sin(const Sin &s) : Symbol(s) {}
 
 Sin::Sin(const Symbolic &s) : Symbol(Symbol("sin")[s]) {}
 
+double Sin::evalf() const {
+  Symbolic s = parameters.front().simplify();
+  return sin(double(s));
+}
+
 Simplified Sin::simplify() const {
   Symbolic s = parameters.front().simplify();
   Symbolic candidate = s / SymbolicConstant::pi;
@@ -393,6 +409,11 @@ Cos::Cos(const Cos &s) : Symbol(s) {}
 
 Cos::Cos(const Symbolic &s) : Symbol(Symbol("cos")[s]) {}
 
+double Cos::evalf() const {
+  Symbolic s = parameters.front().simplify();
+  return cos(double(s));
+}
+
 Simplified Cos::simplify() const {
   Symbolic s = parameters.front().simplify();
   Symbolic candidate = s / SymbolicConstant::pi;
@@ -468,6 +489,11 @@ Sinh::Sinh(const Sinh &s) : Symbol(s) {}
 
 Sinh::Sinh(const Symbolic &s) : Symbol(Symbol("sinh")[s]) {}
 
+double Sinh::evalf() const {
+  Symbolic s = parameters.front().simplify();
+  return sinh(double(s));
+}
+
 Simplified Sinh::simplify() const {
   const Symbolic &s = parameters.front().simplify();
   if (s == 0)
@@ -503,6 +529,11 @@ Symbolic Sinh::integrate(const Symbolic &s) const {
 Cosh::Cosh(const Cosh &s) : Symbol(s) {}
 
 Cosh::Cosh(const Symbolic &s) : Symbol(Symbol("cosh")[s]) {}
+
+double Cosh::evalf() const {
+  Symbolic s = parameters.front().simplify();
+  return cosh(double(s));
+}
 
 Simplified Cosh::simplify() const {
   const Symbolic &s = parameters.front().simplify();
@@ -540,6 +571,11 @@ Log::Log(const Log &s) : Symbol(s) {}
 
 Log::Log(const Symbolic &s1, const Symbolic &s2)
     : Symbol(Symbol("log")[s1, s2]) {}
+
+double Log::evalf() const {
+  Symbolic s = parameters.front().simplify();
+  return log(double(s));
+}
 
 void Log::print(ostream &o) const {
   if (parameters.size() == 2 && parameters.front() == SymbolicConstant::e) {
@@ -602,6 +638,13 @@ Power::Power(const Power &s) : Symbol(s) {}
 Power::Power(const Symbolic &base, const Symbolic &exp) : Symbol("pow") {
   parameters.push_back(base);
   parameters.push_back(exp);
+}
+
+double Power::evalf() const {
+  const Symbolic &base = parameters.front().simplify();
+  const Symbolic &exponent = parameters.back().simplify();
+
+  return pow(double(base), double(exponent));
 }
 
 void Power::print(ostream &o) const {
