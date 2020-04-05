@@ -5,47 +5,48 @@
 
 using namespace std;
 
-TEST(Solve, 1thDegree)
-{
-    Symbolic x("x");
+TEST(Solve, 1thDegree) {
+  Symbolic x("x");
 
-    auto sols = solve(x - 1, x);
+  auto sols = solve(x - 1, x);
 
-    ASSERT_TRUE(sols.size() == 1);
+  ASSERT_TRUE(sols.size() == 1);
 
-    for (auto sol : sols) {
-        ASSERT_TRUE(sol.rhs == 1);
-    }
+  for (auto sol : sols) {
+    ASSERT_TRUE(sol.rhs == 1);
+  }
 }
 
-TEST(Solve, 2thDegree)
-{
-    Symbolic x("x");
+TEST(Solve, 2thDegree) {
+  Symbolic x("x");
 
-    auto sols = solve((x - 1) * (x - 1), x);
+  auto sols = solve((x - 1) * (x - 1), x);
 
-    ASSERT_TRUE(sols.size() == 2);
+  ASSERT_TRUE(sols.size() == 2);
 
-    for (auto sol : sols) {
-        ASSERT_TRUE(sol.rhs == 1);
-    }
+  for (auto sol : sols) {
+    ASSERT_TRUE(sol.rhs == 1);
+  }
 }
 
-TEST(Solve, 3thDegree)
-{
-    Symbolic x("x");
+TEST(Solve, 3thDegree) {
+  Symbolic x("x");
 
-    auto sols = solve((x - 1) * (x - 1) * (x - 1), x);
+  auto sols = solve((x - 1) * (x - 1) * (x - 1), x);
 
-    ASSERT_TRUE(sols.size() == 3);
+  ASSERT_TRUE(sols.size() == 3);
 
-    for (auto sol : sols) {
-        ASSERT_TRUE(sol.rhs == 1);
-    }
+  for (auto sol : sols) {
+    ASSERT_TRUE(sol.rhs.simplify() == 1);
+  }
 }
 
-int main(int argc, char** argv)
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+TEST(Solve, findroot) {
+  Symbolic x("x");
+  cout << find_root(cos(x) * sin(1) - (x / 2), x);
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

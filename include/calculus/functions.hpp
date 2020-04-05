@@ -684,8 +684,9 @@ void Power::print(ostream &o) const {
 
 Simplified Power::simplify() const {
   list<Symbolic>::iterator i, j;
-  const Symbolic &base = parameters.front().simplify();    // b
-  const Symbolic &exponent = parameters.back().simplify(); // n
+
+  const Symbolic &base = parameters.front().simplify();
+  const Symbolic &exponent = parameters.back().simplify();
 
   if (exponent == 0 && base == 0) {
     return SymbolicConstant::undefined;
@@ -701,6 +702,11 @@ Simplified Power::simplify() const {
 
   if (base == 0 || base == 1) {
     return base;
+  }
+
+  if (base.type() == typeid(Symbol) && exponent.type() == typeid(Numeric) &&
+      Number<void>(exponent).numerictype() == typeid(int)) {
+    return *this;
   }
 
   if (base.type() == typeid(Power)) {

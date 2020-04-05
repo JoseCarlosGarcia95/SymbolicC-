@@ -8,7 +8,7 @@ for f in test/*; do
     fi
   fi
   echo "Running tests for $f"
-  g++ "$f" -l gtest -o ./run-test.out -lm -I include/  -pthread -lgmpxx -lgmp || exit 1
+  g++ "$f" -l gtest -o ./run-test.out -lm -I include/ -pthread -lgmpxx -lgmp || exit 1
   TEST_RESULT=$(./run-test.out || exit 1)
   MS=$(echo "$TEST_RESULT" | grep "case ran." | awk '{print $9}')
   MS="${MS:1}"
