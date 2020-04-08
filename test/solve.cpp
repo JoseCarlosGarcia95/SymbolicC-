@@ -43,9 +43,29 @@ TEST(Solve, 3thDegree) {
 
 TEST(Solve, findroot) {
   Symbolic x("x");
-  cout << find_root(cos(x) * sin(1) - (x / 2), x);
+  setprecision(2);
+  ASSERT_TRUE(abs(0.96 - find_root(cos(x) * sin(1) - (x / 2), x)) < 0.01);
 }
 
+TEST(solve, BasicExp) {
+  Symbolic x("x");
+  auto sols = solve(3 * exp(2 * x) - 2, x);
+  for (auto sol : sols) {
+    ASSERT_TRUE(sol.rhs.simplify() ==
+                1 / Symbolic(2) * log(SymbolicConstant::e, Symbolic(2) / 3));
+  }
+}
+
+TEST(solve, ExpBasic2thDegree) {
+  Symbolic x("x"), z("z");
+
+  auto sols = solve((exp(x ^ 2)) - 1, x);
+  ASSERT_TRUE(sols.size() == 2);
+
+  for (auto sol : sols) {
+    ASSERT_TRUE(sol.rhs.simplify() == 0);
+  }
+}
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

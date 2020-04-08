@@ -45,36 +45,21 @@ list<Equations> solve(const Equations &, const list<Symbolic> &);
 #ifdef SYMBOLIC_DEFINE
 #ifndef SYMBOLIC_CPLUSPLUS_SOLVE_DEFINE
 #define SYMBOLIC_CPLUSPLUS_SOLVE_DEFINE
+double find_root(Symbolic, Symbolic, double);
 
-Equations solve(const Symbolic &e, const Symbolic &x) {
-  Equations soln;
-
-  if (e == 0)
-    soln = (soln, x == x);
-  else if (df(e, x, 2) == 0)
-    soln = (soln, x == -e.coeff(x, 0) / e.coeff(x, 1));
-  else if (df(e, x, 3) == 0) {
+int solve_polynomials(const Symbolic &e, const Symbolic &x, Equations *soln) {
+  if (e == 0) {
+    *soln = (*soln, x == x);
+    return 1;
+  } else if (df(e, x, 2) == 0) {
+    *soln = (*soln, x == -e.coeff(x, 0) / e.coeff(x, 1));
+    return 1;
+  } else if (df(e, x, 3) == 0) {
     Symbolic a = e.coeff(x, 2), b = e.coeff(x, 1), c = e.coeff(x, 0);
     Symbolic d = b * b - 4 * a * c;
-
-    list<Equations> eq;
-    list<Equations>::iterator i;
-    UniqueSymbol u, v, w;
-    eq = ((u ^ 2) + u * v + w).match(d, (u, v, w));
-    for (i = eq.begin(); i != eq.end(); ++i)
-      try {
-        Symbolic up = rhs(*i, u), vp = rhs(*i, v), wp = rhs(*i, w);
-        if ((vp ^ 2) / 4 == wp) {
-          soln = (soln, x == (-b + up + vp / 2) / (2 * a),
-                  x == (-b - up - vp / 2) / (2 * a));
-          break;
-        }
-      } catch (const SymbolicError &se) {
-      }
-
-    if (i == eq.end())
-      soln =
-          (soln, x == (-b + sqrt(d)) / (2 * a), x == (-b - sqrt(d)) / (2 * a));
+    *soln =
+        (*soln, x == (-b + sqrt(d)) / (2 * a), x == (-b - sqrt(d)) / (2 * a));
+    return 1;
   } else if (df(e, x, 4) == 0) {
     Symbolic l = e / e.coeff(x, 3);
     Symbolic a1 = l.coeff(x, 2), a2 = l.coeff(x, 1), a3 = l.coeff(x, 0);
@@ -82,20 +67,83 @@ Equations solve(const Symbolic &e, const Symbolic &x) {
              R = (9 * a1 * a2 - 27 * a3 - 2 * a1 * a1 * a1) / 54;
     Symbolic S1 = (R + sqrt(Q * Q * Q + R * R)) ^ (Symbolic(1) / 3);
     Symbolic S2 = (R - sqrt(Q * Q * Q + R * R)) ^ (Symbolic(1) / 3);
-    soln = (soln, x == S1 + S2 - a1 / 3,
-            x == -(S1 + S2) / 2 - a1 / 3 +
-                     SymbolicConstant::i * sqrt(Symbolic(3)) * (S1 - S2),
-            x == -(S1 + S2) / 2 - a1 / 3 -
-                     SymbolicConstant::i * sqrt(Symbolic(3)) * (S1 - S2));
-  } else if (e.coeff(x, -1) != 0) {
+    *soln = (*soln, x == S1 + S2 - a1 / 3,
+             x == -(S1 + S2) / 2 - a1 / 3 +
+                      SymbolicConstant::i * sqrt(Symbolic(3)) * (S1 - S2),
+             x == -(S1 + S2) / 2 - a1 / 3 -
+                      SymbolicConstant::i * sqrt(Symbolic(3)) * (S1 - S2));
+    return 1;
+  }
+
+  return 0;
+}
+
+int solve_inverse_eqn(const Symbolic &e, const Symbolic &x, Equations *soln) {
+  if (e.coeff(x, -1) != 0) {
     Equations::iterator i;
-    soln = solve(x * e, x);
-    for (i = soln.begin(); i != soln.end();)
+    *soln = solve(x * e, x);
+    for (i = (*soln).begin(); i != (*soln).end();)
       if (i->lhs == x && i->rhs == 0)
-        i = soln.erase(i);
+        i = (*soln).erase(i);
       else
         ++i;
+    return 1;
   }
+
+  return 0;
+}
+
+int solve_exponential(const Symbolic &e, const Symbolic &x, Equations *soln) {
+  Symbolic a, b, c, z("z"), poly_expr;
+  list<Equations> matches;
+  UniqueSymbol am, bm, cm;
+
+  matches = (bm * exp(am * x) + cm).match(e, (am, bm, cm));
+
+  if (matches.size()) {
+    a = rhs(matches.front(), am);
+    b = rhs(matches.front(), bm);
+    c = rhs(matches.front(), cm);
+
+    *soln = (*soln, x == log(SymbolicConstant::e, -c / b) / a);
+    return 1;
+  }
+
+  matches = (exp(x ^ 2) + cm).match(e, (am, bm, cm));
+
+  if (matches.size()) {
+    c = rhs(matches.front(), cm);
+    Equations tmp_soln;
+
+    if (solve_polynomials(x * x - log(SymbolicConstant::e, -c), x, soln)) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int solve_numerical(const Symbolic &e, const Symbolic &x, Equations *soln) {
+  *soln = (*soln, x == Symbolic(find_root(e, x, NEWTON_MAX_PRECISSION)));
+  return 1;
+}
+
+Equations solve(const Symbolic &e, const Symbolic &x) {
+  Equations soln;
+
+  int (*solvers[])(const Symbolic &, const Symbolic &, Equations *) = {
+      solve_polynomials,
+      solve_exponential,
+      solve_inverse_eqn,
+      solve_numerical,
+  };
+
+  for (int i = 0; i < sizeof(solvers) / sizeof(solvers[0]); i++) {
+    if (solvers[i](e, x, &soln)) {
+      return soln;
+    }
+  }
+
   return soln;
 }
 
