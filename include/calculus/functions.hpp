@@ -711,8 +711,16 @@ Simplified Power::simplify() const {
 
   if (base.type() == typeid(Power)) {
     CastPtr<const Power> p = base;
-    return (p->parameters.front() ^ (p->parameters.back() * exponent))
-        .simplify();
+
+    if (p->parameters.front() != SymbolicConstant::e) {
+      return (p->parameters.front() ^ (p->parameters.back() * exponent))
+          .simplify();
+    }
+  }
+  if (exponent.type() == typeid(Power) && base == SymbolicConstant::e) {
+    CastPtr<const Power> p = exponent;
+
+    return ((base ^ p->parameters.front()) ^ (p->parameters.back())).simplify();
   } else if (base.type() == typeid(Numeric) &&
              exponent.type() == typeid(Numeric) &&
              Number<void>(exponent).numerictype() == typeid(int)) {
@@ -782,7 +790,6 @@ Simplified Power::simplify() const {
         return (ifactor * sqrt(ofactor)).simplify();
       }
     }
-
   } else if (base.type() == typeid(Numeric) &&
              exponent.type() == typeid(Numeric) &&
              Number<void>(base).numerictype() == typeid(double)) {

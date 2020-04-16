@@ -626,8 +626,9 @@ Symbolic Symbolic::coeff(const Symbolic &s) const {
 }
 
 Symbolic Symbolic::coeff(const Symbolic &s, int i) const {
-  if (i == 0)
+  if (i == 0) {
     return subst(s, Number<int>(0));
+  }
   return SymbolicProxy::coeff(s ^ i);
 }
 
