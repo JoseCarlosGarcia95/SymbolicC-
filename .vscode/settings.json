@@ -15,6 +15,7 @@
         "*.tcc": "cpp",
         "cmath": "cpp",
         "complex": "cpp",
-        "hash_map": "cpp"
+        "hash_map": "cpp",
+        "typeinfo": "cpp"
     }
 }
